@@ -1,0 +1,49 @@
+{
+  "PMBM_baseline": {
+    "MOTA": -0.177,
+    "MOTP": 1.2,
+    "FP/frame": 0.8,
+    "IDSW": 3
+  },
+  "experiments": {
+    "real+synth_r1": {
+      "MOTA": -10.2322,
+      "MOTP": 1.2192,
+      "FP/frame": 40.18,
+      "FN/frame": 2.86,
+      "IDSW": 273,
+      "TP": 821,
+      "FP": 32984,
+      "FN": 2349,
+      "val_loss": 0.459406118203954,
+      "epoch": 6,
+      "exp": "real+synth_r1"
+    },
+    "real+synth_r3": {
+      "MOTA": -14.405,
+      "MOTP": 1.2351,
+      "FP/frame": 33.34,
+      "FN/frame": 1.28,
+      "IDSW": 712,
+      "TP": 1390,
+      "FP": 46342,
+      "FN": 1780,
+      "val_loss": 0.4020227444608037,
+      "epoch": 27,
+      "exp": "real+synth_r3"
+    },
+    "real_only": {
+      "MOTA": -9.5035,
+      "MOTP": 1.2021,
+      "FP/frame": 30.43,
+      "FN/frame": 2.14,
+      "IDSW": 456,
+      "TP": 1008,
+      "FP": 30678,
+      "FN": 2162,
+      "val_loss": 0.34976294654898527,
+      "epoch": 9,
+      "exp": "real_only"
+    }
+  }
+}

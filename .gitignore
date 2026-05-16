@@ -11,3 +11,6 @@ checkpoints/
 *.pt
 *.pth
 *.ckpt
+
+# Training logs (generated at runtime)
+logs/
