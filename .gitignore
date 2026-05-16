@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+.idea/
+.vscode/
+
+# Model checkpoints (large binary files)
+checkpoints/
+*.pt
+*.pth
+*.ckpt
