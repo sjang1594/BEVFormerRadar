@@ -75,6 +75,9 @@ def build_gt_maps(
         ri = min(ri, H - 1)
         ci = min(ci, W - 1)
 
+        # sub-pixel offset으로 인해 gauss < 1.0이 되는 경우를 방지 (pos_mask 정확도)
+        heatmap[cls, ri, ci] = 1.0
+
         center_mask[ri, ci] = True
         offset_map[0, ri, ci] = cx - ci    # x sub-cell
         offset_map[1, ri, ci] = cy - ri    # y sub-cell
