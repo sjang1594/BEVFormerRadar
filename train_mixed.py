@@ -115,6 +115,8 @@ def main():
                         help="합성 데이터 .npz 디렉토리 (없으면 real only)")
     parser.add_argument("--ratio", type=float, default=1.0,
                         help="synthetic/real 비율 (0=real only, 1=1:1, 3=1:3)")
+    parser.add_argument("--ckpt-root", default="checkpoints",
+                        help="체크포인트 저장 루트 디렉토리 (기본: checkpoints)")
     args = parser.parse_args()
 
     cfg    = load_cfg()
@@ -154,7 +156,7 @@ def main():
                                    weight_decay=cfg["train"]["weight_decay"])
 
     # ── 학습 ──────────────────────────────────────────────────────────────────
-    ckpt_dir = f"checkpoints/{exp_label}"
+    ckpt_dir = f"{args.ckpt_root}/{exp_label}"
     os.makedirs(ckpt_dir, exist_ok=True)
     best_val  = float("inf")
     epochs    = cfg["train"]["epochs"]

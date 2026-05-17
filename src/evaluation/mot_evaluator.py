@@ -33,9 +33,11 @@ class MOTEvaluator:
         self.tp = self.fp = self.fn = self.idsw = 0
         self.sum_dist  = 0.0
         self.n_dist    = 0
+        self.n_frames  = 0
         self._prev_match: dict = {}
 
     def update(self, det_pos, det_ids, gt_pos, gt_ids):
+        self.n_frames += 1
         matched, unmatched_g, unmatched_d = hungarian_match(
             gt_pos, det_pos, self.thr
         )
@@ -65,7 +67,7 @@ class MOTEvaluator:
 
     def summary(self) -> dict:
         n_gt    = max(self.tp + self.fn, 1)
-        n_frame = max(self.n_dist, 1)
+        n_frame = max(self.n_frames, 1)
         return {
             "MOTA":      round(self.mota, 4),
             "MOTP":      round(self.motp, 4),

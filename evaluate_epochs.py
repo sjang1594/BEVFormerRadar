@@ -174,21 +174,24 @@ def main():
         ("FP/frame", "FP/frame (↓)"),
         ("IDSW",     "IDSW (↓)"),
     ]
-    colors = {
-        "real_only":      "tab:blue",
-        "real+synth_r1":  "tab:orange",
-        "real+synth_r3":  "tab:green",
+    _color_map = {
+        "real_only":          "tab:blue",
+        "real+synth_r1":      "tab:orange",
+        "real+synth_r3":      "tab:green",
+        "real+radar_aug":     "tab:red",
     }
+    _fallback = plt.cm.Set2.colors
 
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
     fig.suptitle(f"MOTA curve per epoch  (score_thr={score_thr})", fontsize=12)
 
     for ax, (metric, title) in zip(axes, metrics):
-        for exp, results in all_results.items():
+        for idx, (exp, results) in enumerate(all_results.items()):
+            color = _color_map.get(exp, _fallback[idx % len(_fallback)])
             epochs = [r["epoch_num"] for r in results]
             vals   = [r[metric]      for r in results]
             ax.plot(epochs, vals, marker="o", label=exp,
-                    color=colors.get(exp), linewidth=1.5)
+                    color=color, linewidth=1.5)
         ax.set_title(title, fontsize=10)
         ax.set_xlabel("Epoch")
         ax.legend(fontsize=8)
