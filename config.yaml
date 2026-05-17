@@ -107,5 +107,5 @@ train:
 
 eval:
   nms_radius: 2.0          # [m] center-distance NMS
-  score_threshold: 0.0001   # mini dataset 30ep → low confidence
+  score_threshold: 0.1       # threshold sweep 결과: bimodal 분포에서 0.1이 optimal
   match_threshold: 2.0     # [m] MOT match threshold
