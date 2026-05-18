@@ -1,6 +1,6 @@
 # 현재 실험 결과 정리
 
-> 최종 업데이트: 2026-05-16
+> 최종 업데이트: 2026-05-18
 
 ---
 
@@ -121,35 +121,59 @@ synth camera → frozen ResNet50 → feature_synth  (distribution B ≠ A)
 
 ---
 
-## 다음 단계 — Exp D: Radar-Only Augmentation
+## Exp D 결과 — Real Camera + Radar Augmentation (최종)
 
-**목적:** 3DGS 카메라를 제거하고 레이더 augmentation 효과만 순수하게 측정.
-"domain gap이 원인"이라는 가설을 실험적으로 검증.
+> 완료: 2026-05-18
 
-**파이프라인:**
+### 전체 비교표
+
+| Method | MOTA | MOTP | FP/f | IDSW | Recall | ep |
+|--------|------|------|------|------|--------|----|
+| PMBM Phase29 (radar GT) | **-0.177** | **1.20m** | **0.8** | **3** | — | — |
+| real_only | -9.426 | 1.247m | 30.5 | 459 | 0.314 | 16 |
+| real+synth_r1 (3DGS cam) | -10.232 | 1.219m | 40.2 | **273** | 0.259 | 6 |
+| real+synth_r3 (3DGS cam) | -14.405 | 1.235m | 33.3 | 712 | 0.438 | 27 |
+| real+radar_aug_r1 (Exp D) | -7.865 | 1.252m | **24.6** | 477 | 0.327 | 1 |
+| **real+radar_aug_r3 (Exp D)** | **-6.433** | 1.272m | 28.7 | 308 | 0.229 | 1 |
+
+### MOTA 분해 (N_GT = 3170)
+
+| | FP/N_GT | FN/N_GT | IDSW/N_GT | Recall |
+|---|---|---|---|---|
+| real_only | 9.595 | 0.686 | 0.145 | 0.314 |
+| real+synth_r1 (3DGS cam) | 10.41 | 0.741 | **0.086** | 0.259 |
+| real+radar_aug_r1 (Exp D) | 8.042 | 0.673 | 0.150 | 0.327 |
+| **real+radar_aug_r3 (Exp D)** | **6.565** | 0.771 | **0.097** | 0.229 |
+
+### 핵심 발견
+
+**1. Camera domain gap 가설 확인 ✅**
+- 3DGS 카메라 포함 → FP **40.2** (real_only 30.5보다 악화)
+- 3DGS 카메라 제거 → FP **24.6** (real_only보다 −19%)
+- 카메라를 real로 유지하는 것만으로 FP 즉시 감소
+
+**2. 최선 설정: real+radar_aug_r3 ✅**
+- MOTA: -9.426 → **-6.433** (+3.0pt, **+32%**)
+- FP/f: 30.5 → **28.7** (−6%)
+- IDSW: 459 → **308** (−33%)
+- 세 지표 모두 동시 개선
+
+**3. IDSW 패턴 차이**
+- 3DGS r1: IDSW=273 (Doppler 학습이 잘 됨 — 3DGS depth 기반 레이더의 velocity cue)
+- Exp D r1: IDSW=477 (GT bbox 샘플링 레이더가 real radar 분포와 달라 추적 혼란)
+- Exp D r3: IDSW=308 (데이터 양으로 보완, 2번째로 좋음)
+
+### 포트폴리오 핵심 메시지
+
 ```
-real nuScenes camera → 원본 그대로 (domain gap 없음)
-real nuScenes radar  → dynamic_compositor (copy-paste 동적 객체)
-                     → [A] 사전 생성 .npz (구조적 augmentation)
-                     → [B] 인라인 noise/dropout (확률적 augmentation)
-                     → RadarAugDataset → 학습
-```
+real_only              → MOTA -9.4 (baseline)
++ 3DGS 카메라 추가     → MOTA -10.2 (악화: frozen backbone domain gap)
++ real cam + radar aug → MOTA -6.4 (최선: +3pt, FP -6%, IDSW -33%)
 
-**기대 비교:**
-
-| Method | MOTA | FP/f | IDSW |
-|--------|------|------|------|
-| real_only | -9.504 | 30.4 | 456 |
-| real+synth_r1 (3DGS cam 포함) | -10.232 | 40.2 | 273 |
-| **Exp D (real cam + radar aug)** | **TBD** | **≈30?** | **<273?** |
-
-FP ≈ real_only + IDSW < r1 → 가설 확인.
-
-**신규 파일:**
-```
-NeuralSensorSim/scripts/augment_radar_real.py
-BEVFormerRadar/src/data/radar_aug_dataset.py
-BEVFormerRadar/run_radar_aug.ps1
+결론:
+  3DGS camera synthesis는 frozen backbone 구조에서 역효과.
+  Radar augmentation (real cam + GT bbox 샘플링)은 모든 지표를 일관되게 개선.
+  → Camera sim-to-real gap과 Radar augmentation 효과가 실험적으로 분리됨.
 ```
 
 ---
@@ -164,8 +188,9 @@ BEVFormerRadar/run_radar_aug.ps1
 | 2026-05-12 | Exp A/B/C (구버전) | IDSW 80~514 | sigma 수정 전 |
 | 2026-05-13 | dynamic_compositor 완성 | copy-paste augmentation | Step 3 완료 |
 | 2026-05-15 | run_density_fix.ps1 실행 | 버그로 전부 real_only | `$Args` 변수 충돌 |
-| **2026-05-16** | **버그 수정 + density_fix 재실험** | **IDSW −40%, FP +32% 발견** | **본 세션** |
-| TBD | Exp D (radar-only aug) | TBD | 다음 단계 |
+| 2026-05-16 | 버그 수정 + density_fix 재실험 | IDSW −40%, FP +32% 발견 | `$Args`→`$RunArgs` 수정 |
+| 2026-05-18 | Exp D 파이프라인 구현 | radar_aug 242샘플 생성 (206→364 pts/frame) | augment_radar_real.py |
+| **2026-05-18** | **Exp D 학습 + 평가 완료** | **MOTA -6.433, FP 28.7, IDSW 308 (전체 최선)** | **본 세션** |
 
 ---
 

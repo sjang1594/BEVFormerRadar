@@ -24,6 +24,7 @@ from src.data.dataset import BEVFormerDataset, collate_fn
 from src.data.transforms import build_train_transform, build_val_transform
 from src.data.synthetic_dataset import SyntheticDataset
 from src.data.mixed_dataset import MixedDataset
+from src.data.radar_aug_dataset import RadarAugDataset
 from src.model.bevformer import BEVFormer
 from src.model.detection_head import DetectionHead
 from src.loss.detection_loss import detection_loss
@@ -113,10 +114,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--synth-dir", default=None,
                         help="합성 데이터 .npz 디렉토리 (없으면 real only)")
+    parser.add_argument("--radar-aug-dir", default=None,
+                        help="radar_aug .npz 디렉토리 (real cam + aug radar, Exp D)")
     parser.add_argument("--ratio", type=float, default=1.0,
                         help="synthetic/real 비율 (0=real only, 1=1:1, 3=1:3)")
+    parser.add_argument("--real-fraction", type=float, default=1.0,
+                        help="real 데이터 사용 비율 (0~1, scene 단위 subset)")
     parser.add_argument("--ckpt-root", default="checkpoints",
-                        help="체크포인트 저장 루트 디렉토리 (기본: checkpoints)")
+                        help="체크포인트 저장 루트 디렉토리")
     args = parser.parse_args()
 
     cfg    = load_cfg()
@@ -124,18 +129,32 @@ def main():
     print(f"Device: {device}")
 
     # ── 데이터셋 ──────────────────────────────────────────────────────────────
-    real_train = BEVFormerDataset(cfg, cfg["data"]["train_scenes"],
+    all_scenes  = cfg["data"]["train_scenes"]
+    n_scenes    = max(1, round(len(all_scenes) * args.real_fraction))
+    use_scenes  = all_scenes[:n_scenes]
+    frac_label  = f"s{n_scenes}"   # e.g. s3 = 3 scenes out of 6
+
+    real_train = BEVFormerDataset(cfg, use_scenes,
                                   transform=build_train_transform(cfg))
     val_ds     = BEVFormerDataset(cfg, cfg["data"]["val_scenes"],
                                   transform=build_val_transform(cfg))
 
-    if args.synth_dir and args.ratio > 0 and os.path.isdir(args.synth_dir):
+    if args.radar_aug_dir and os.path.isdir(args.radar_aug_dir):
+        # Exp D: real camera + radar augmentation (3DGS 카메라 없음)
+        aug_ds    = RadarAugDataset(args.radar_aug_dir, cfg, augment=True)
+        train_ds  = MixedDataset(real_train, aug_ds, ratio=args.ratio)
+        exp_label = f"real+radar_aug_r{args.ratio:.0f}_{frac_label}"
+    elif args.synth_dir and args.ratio > 0 and os.path.isdir(args.synth_dir):
         synth_ds  = SyntheticDataset(args.synth_dir, cfg, augment=True)
         train_ds  = MixedDataset(real_train, synth_ds, ratio=args.ratio)
-        exp_label = f"real+synth_r{args.ratio:.0f}"
+        exp_label = f"real+synth_r{args.ratio:.0f}_{frac_label}"
     else:
         train_ds  = real_train
-        exp_label = "real_only"
+        exp_label = f"real_only_{frac_label}"
+
+    # real_fraction=1.0 (기본값)이면 scene suffix 제거 (하위 호환)
+    if args.real_fraction >= 1.0:
+        exp_label = exp_label.replace("_s6", "")
 
     train_loader = DataLoader(train_ds, batch_size=cfg["train"]["batch_size"],
                               shuffle=False, collate_fn=collate_fn,

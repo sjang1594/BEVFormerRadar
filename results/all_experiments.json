@@ -6,43 +6,43 @@
     "IDSW": 3
   },
   "experiments": {
-    "real+synth_r1": {
-      "MOTA": -10.2322,
-      "MOTP": 1.2192,
-      "FP/frame": 40.18,
-      "FN/frame": 2.86,
-      "IDSW": 273,
-      "TP": 821,
-      "FP": 32984,
-      "FN": 2349,
-      "val_loss": 0.459406118203954,
-      "epoch": 6,
-      "exp": "real+synth_r1"
+    "real+radar_aug_r1": {
+      "MOTA": -7.8653,
+      "MOTP": 1.2521,
+      "FP/frame": 24.58,
+      "FN/frame": 2.06,
+      "IDSW": 477,
+      "TP": 1037,
+      "FP": 25493,
+      "FN": 2133,
+      "val_loss": 0.4912442365070669,
+      "epoch": 1,
+      "exp": "real+radar_aug_r1"
     },
-    "real+synth_r3": {
-      "MOTA": -14.405,
-      "MOTP": 1.2351,
-      "FP/frame": 33.34,
-      "FN/frame": 1.28,
-      "IDSW": 712,
-      "TP": 1390,
-      "FP": 46342,
-      "FN": 1780,
-      "val_loss": 0.4020227444608037,
-      "epoch": 27,
-      "exp": "real+synth_r3"
+    "real+radar_aug_r3": {
+      "MOTA": -6.4331,
+      "MOTP": 1.2721,
+      "FP/frame": 28.67,
+      "FN/frame": 3.37,
+      "IDSW": 308,
+      "TP": 726,
+      "FP": 20811,
+      "FN": 2444,
+      "val_loss": 1.021776136465189,
+      "epoch": 1,
+      "exp": "real+radar_aug_r3"
     },
     "real_only": {
-      "MOTA": -9.5035,
-      "MOTP": 1.2021,
-      "FP/frame": 30.43,
-      "FN/frame": 2.14,
-      "IDSW": 456,
-      "TP": 1008,
-      "FP": 30678,
-      "FN": 2162,
-      "val_loss": 0.34976294654898527,
-      "epoch": 9,
+      "MOTA": -9.4256,
+      "MOTP": 1.2473,
+      "FP/frame": 30.54,
+      "FN/frame": 2.18,
+      "IDSW": 459,
+      "TP": 996,
+      "FP": 30416,
+      "FN": 2174,
+      "val_loss": 0.34790796586653083,
+      "epoch": 16,
       "exp": "real_only"
     }
   }
